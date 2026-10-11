@@ -59,21 +59,25 @@ jobs:
       - name: Install Dependencies
         run: flutter pub get
 
-      - name: Decode Release Keystore
-        if: "${{ secrets.KEYSTORE_BASE64 != '' }}"
+      - name: Configure Keystore (Optional)
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          echo "$KEYSTORE_BASE64" | base64 -d > android/app/upload-keystore.jks
-          cat <<EOF > android/key.properties
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "Keystore secret detected, decoding..."
+            echo "$KEYSTORE_BASE64" | base64 -d > android/app/upload-keystore.jks
+            cat <<EOF > android/key.properties
           storePassword=$KEYSTORE_PASSWORD
           keyPassword=$KEY_PASSWORD
           keyAlias=$KEY_ALIAS
           storeFile=upload-keystore.jks
           EOF
+          else
+            echo "No KEYSTORE_BASE64 secret provided. Proceeding with standard release build."
+          fi
 
       - name: Build Android App Bundle (.aab)
         run: flutter build appbundle --release
