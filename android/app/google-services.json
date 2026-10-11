@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "139527314511",
+    "project_id": "raktsetu-4560a",
+    "storage_bucket": "raktsetu-4560a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:139527314511:android:97b36d4e71c92ce5991e3a",
+        "android_client_info": {
+          "package_name": "org.raktsetu.blooddonor"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB3fD9M3aS9cG_4HJz8UtlC037EkOtRUVs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

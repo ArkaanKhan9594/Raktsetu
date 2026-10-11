@@ -1,0 +1,130 @@
+name: Build Production Mobile Apps
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      backend_url:
+        description: 'Production API Base URL'
+        required: false
+        default: 'https://api.raktsetu.org'
+
+jobs:
+  validate_and_test:
+    name: Code Analysis & Test Suite
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.x'
+          channel: 'stable'
+          cache: true
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Analyze Project Code
+        run: flutter analyze
+
+      - name: Run Test Suite
+        run: flutter test
+
+  build_android:
+    name: Build Android App Bundle (.aab)
+    needs: validate_and_test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.x'
+          channel: 'stable'
+          cache: true
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Decode Release Keystore
+        if: env.KEYSTORE_BASE64 != ''
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > android/app/upload-keystore.jks
+          cat <<EOF > android/key.properties
+          storePassword=$KEYSTORE_PASSWORD
+          keyPassword=$KEY_PASSWORD
+          keyAlias=$KEY_ALIAS
+          storeFile=upload-keystore.jks
+          EOF
+
+      - name: Build Android App Bundle (.aab)
+        env:
+          API_URL: ${{ inputs.backend_url || secrets.PROD_API_URL || 'https://api.raktsetu.org' }}
+        run: |
+          flutter build appbundle --release \
+            --dart-define=API_URL=$API_URL \
+            --dart-define=BACKEND_TYPE=rest
+
+      - name: Upload Android Release Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: raktsetu-production-release-bundle
+          path: build/app/outputs/bundle/release/*.aab
+          if-no-files-found: error
+
+  build_ios:
+    name: Build iOS Archive
+    needs: validate_and_test
+    runs-on: macos-14
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.x'
+          channel: 'stable'
+          cache: true
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Build iOS Release (No Code Signing)
+        env:
+          API_URL: ${{ inputs.backend_url || secrets.PROD_API_URL || 'https://api.raktsetu.org' }}
+        run: |
+          flutter build ios --release --no-codesign \
+            --dart-define=API_URL=$API_URL \
+            --dart-define=BACKEND_TYPE=rest
+
+      - name: Upload iOS Runner Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: raktsetu-ios-release-runner
+          path: build/ios/iphoneos/Runner.app

@@ -1,0 +1,60 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        get(/databases/$(database)/documents/donors/$(request.auth.uid)).data.isAdmin == true;
+    }
+
+    // Donors collection
+    match /donors/{donorId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isOwner(donorId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Blood Events collection
+    match /events/{eventId} {
+      allow read: if true; // Publicly viewable blood donation camps
+      allow create, update, delete: if isAdmin();
+      // Allow donors to register themselves for events
+      allow update: if isAuthenticated() &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['registeredDonorIds']);
+    }
+
+    // Blood Requests collection
+    match /bloodRequests/{requestId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isAdmin();
+    }
+
+    // Donation History Records
+    match /donationRecords/{recordId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAdmin();
+    }
+
+    // User Notifications
+    match /notifications/{notificationId} {
+      allow read, update: if isAuthenticated() &&
+        resource.data.recipientDonorId == request.auth.uid;
+      allow create: if isAuthenticated();
+      allow delete: if isAuthenticated() &&
+        resource.data.recipientDonorId == request.auth.uid;
+    }
+  }
+}

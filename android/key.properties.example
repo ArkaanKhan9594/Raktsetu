@@ -1,0 +1,10 @@
+# -----------------------------------------------------------------------------
+# Android Release Keystore Configuration Template
+# Copy this file to 'android/key.properties' and fill in your private details.
+# NEVER commit key.properties or the .jks file to public version control!
+# -----------------------------------------------------------------------------
+
+storePassword=YOUR_SECURE_KEYSTORE_PASSWORD
+keyPassword=YOUR_SECURE_KEY_PASSWORD
+keyAlias=upload
+storeFile=../upload-keystore.jks
