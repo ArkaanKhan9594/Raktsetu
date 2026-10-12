@@ -124,7 +124,32 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 14),
+            Card(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              color: donor.isAdmin ? const Color(0xFF1B3A6B).withValues(alpha: 0.08) : null,
+              child: SwitchListTile(
+                secondary: Icon(
+                  donor.isAdmin ? Icons.admin_panel_settings : Icons.person_outline,
+                  color: donor.isAdmin ? const Color(0xFF1B3A6B) : Colors.grey,
+                  size: 28,
+                ),
+                title: Text(
+                  donor.isAdmin ? 'Role: Camp Admin (Coordinator)' : 'Role: Standard Blood Donor',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+                subtitle: Text(
+                  donor.isAdmin
+                      ? 'Admin Dashboard active in the bottom navigation bar.'
+                      : 'Toggle on to unlock Admin Dashboard (Event creation & Donor verification).',
+                  style: const TextStyle(fontSize: 12),
+                ),
+                value: donor.isAdmin,
+                activeColor: const Color(0xFF1B3A6B),
+                onChanged: (_) => appState.toggleAdminRole(),
+              ),
+            ),
+            const SizedBox(height: 14),
             Card(
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               child: Padding(

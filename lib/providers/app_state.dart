@@ -26,6 +26,16 @@ class AppState extends ChangeNotifier {
   bool get isAdmin => currentDonor?.isAdmin ?? false;
   int get unreadNotificationCount => notifications.where((n) => !n.isRead).length;
 
+  Future<void> toggleAdminRole() async {
+    if (currentDonor != null) {
+      currentDonor = currentDonor!.copyWith(isAdmin: !isAdmin);
+      if (isAdmin) {
+        allDonationHistory = await repo.getAllDonationHistory();
+      }
+      notifyListeners();
+    }
+  }
+
   Future<void> loadAll() async {
     isLoading = true;
     notifyListeners();
