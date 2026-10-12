@@ -82,9 +82,14 @@ jobs:
       - name: Build Android App Bundle (.aab)
         run: flutter build appbundle --release
 
-      - name: Upload Android Release Artifact
+      - name: Build Standalone Android APK (.apk)
+        run: flutter build apk --release
+
+      - name: Upload Android Release Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: raktsetu-production-release-bundle
-          path: build/app/outputs/bundle/release/*.aab
+          path: |
+            build/app/outputs/bundle/release/*.aab
+            build/app/outputs/flutter-apk/*.apk
           if-no-files-found: error
