@@ -23,14 +23,26 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
       return;
     }
     setState(() => _sending = true);
-    final appState = context.read<AppState>();
-    final verificationId = await appState.auth.sendOtp(phone);
-    setState(() => _sending = false);
-    if (!mounted) return;
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => OtpScreen(phone: phone, verificationId: verificationId)),
-    );
+    try {
+      final appState = context.read<AppState>();
+      final verificationId = await appState.auth.sendOtp(phone);
+      setState(() => _sending = false);
+      if (!mounted) return;
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => OtpScreen(phone: phone, verificationId: verificationId)),
+      );
+    } catch (e) {
+      setState(() => _sending = false);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Login error: ${e.toString().replaceAll('Exception:', '').trim()}'),
+          backgroundColor: Colors.red.shade800,
+          duration: const Duration(seconds: 6),
+        ),
+      );
+    }
   }
 
   @override
