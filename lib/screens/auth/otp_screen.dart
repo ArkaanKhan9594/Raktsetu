@@ -32,7 +32,9 @@ class _OtpScreenState extends State<OtpScreen> {
       return;
     }
 
-    await appState.loginWithPhone(widget.phone);
+    try {
+      await appState.loginWithPhone(widget.phone);
+    } catch (_) {}
     if (!mounted) return;
 
     if (appState.currentDonor == null) {

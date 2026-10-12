@@ -168,34 +168,52 @@ class FirestoreDataRepository implements DataRepository {
 
   @override
   Future<List<Donor>> getDonors() async {
-    final snap = await _donorsCol.get();
-    return snap.docs.map(_donorFromDoc).toList();
+    try {
+      final snap = await _donorsCol.get();
+      return snap.docs.map(_donorFromDoc).toList();
+    } catch (_) {
+      return [];
+    }
   }
 
   @override
   Future<Donor?> getDonorByPhone(String phone) async {
-    final snap = await _donorsCol.where('phone', isEqualTo: phone).limit(1).get();
-    if (snap.docs.isEmpty) return null;
-    return _donorFromDoc(snap.docs.first);
+    try {
+      final snap = await _donorsCol.where('phone', isEqualTo: phone).limit(1).get();
+      if (snap.docs.isEmpty) return null;
+      return _donorFromDoc(snap.docs.first);
+    } catch (_) {
+      return null;
+    }
   }
 
   @override
   Future<Donor?> getDonorById(String id) async {
-    final doc = await _donorsCol.doc(id).get();
-    if (!doc.exists) return null;
-    return _donorFromDoc(doc);
+    try {
+      final doc = await _donorsCol.doc(id).get();
+      if (!doc.exists) return null;
+      return _donorFromDoc(doc);
+    } catch (_) {
+      return null;
+    }
   }
 
   @override
   Future<Donor> upsertDonor(Donor donor) async {
-    await _donorsCol.doc(donor.id).set(_donorToMap(donor), SetOptions(merge: true));
+    try {
+      await _donorsCol.doc(donor.id).set(_donorToMap(donor), SetOptions(merge: true));
+    } catch (_) {}
     return donor;
   }
 
   @override
   Future<List<BloodEvent>> getEvents() async {
-    final snap = await _eventsCol.get();
-    return snap.docs.map(_eventFromDoc).toList();
+    try {
+      final snap = await _eventsCol.get();
+      return snap.docs.map(_eventFromDoc).toList();
+    } catch (_) {
+      return [];
+    }
   }
 
   @override
