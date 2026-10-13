@@ -145,7 +145,7 @@ class ProfileScreen extends StatelessWidget {
                   style: const TextStyle(fontSize: 12),
                 ),
                 value: donor.isAdmin,
-                activeColor: const Color(0xFF1B3A6B),
+                activeThumbColor: const Color(0xFF1B3A6B),
                 onChanged: (_) => appState.toggleAdminRole(),
               ),
             ),

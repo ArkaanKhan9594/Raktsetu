@@ -47,35 +47,40 @@ class InMemoryDataRepository implements DataRepository {
   final List<BloodRequest> _requests = [];
   final List<AppNotification> _notifications = [];
 
-  InMemoryDataRepository() {
-    _seed();
-  }
-
-  void _seed() {
+  static List<Donor> get initialSeedDonors {
     final now = DateTime.now();
-    _donors.addAll([
+    return [
       Donor(id: 'd1', name: 'Aarav Shah', phone: '9000000001', bloodGroup: BloodGroup.oNeg, city: 'Ahmedabad', dob: DateTime(1998, 4, 12), gender: 'Male', lastDonationDate: now.subtract(const Duration(days: 100)), isVerified: true, latitude: 23.0225, longitude: 72.5714),
       Donor(id: 'd2', name: 'Priya Mehta', phone: '9000000002', bloodGroup: BloodGroup.abNeg, city: 'Ahmedabad', dob: DateTime(2000, 8, 2), gender: 'Female', lastDonationDate: now.subtract(const Duration(days: 20)), isVerified: true, latitude: 23.0395, longitude: 72.5660),
       Donor(id: 'd3', name: 'Kabir Patel', phone: '9000000003', bloodGroup: BloodGroup.bPos, city: 'Gandhinagar', dob: DateTime(1995, 1, 30), gender: 'Male', lastDonationDate: null, isVerified: true, latitude: 23.2156, longitude: 72.6369),
       Donor(id: 'd4', name: 'Isha Joshi', phone: '9000000004', bloodGroup: BloodGroup.oPos, city: 'Ahmedabad', dob: DateTime(1999, 11, 5), gender: 'Female', lastDonationDate: now.subtract(const Duration(days: 200)), isVerified: true, latitude: 23.0060, longitude: 72.5090),
       Donor(id: 'd5', name: 'Rohan Trivedi', phone: '9000000005', bloodGroup: BloodGroup.aPos, city: 'Surat', dob: DateTime(1997, 6, 18), gender: 'Male', lastDonationDate: now.subtract(const Duration(days: 45)), isVerified: false, latitude: 21.1702, longitude: 72.8311),
       Donor(id: 'admin1', name: 'Camp Coordinator', phone: '9999999999', bloodGroup: BloodGroup.oPos, city: 'Ahmedabad', dob: DateTime(1990, 1, 1), gender: 'Other', isVerified: true, isAdmin: true, latitude: 23.0225, longitude: 72.5714),
-    ]);
+    ];
+  }
 
-    _events.addAll([
+  static List<BloodEvent> get initialSeedEvents {
+    final now = DateTime.now();
+    return [
       BloodEvent(id: 'e1', title: 'Republic Day Blood Camp', organizer: 'Lions Club Ahmedabad', venue: 'Community Hall, Navrangpura', startDateTime: DateTime(2026, 1, 26, 9), endDateTime: DateTime(2026, 1, 26, 17), capacity: 100, registeredDonorIds: ['d1', 'd4'], latitude: 23.0350, longitude: 72.5626),
       BloodEvent(id: 'e2', title: 'College Donor Drive', organizer: 'ASTT Student Council', venue: 'Main Auditorium', startDateTime: now.subtract(const Duration(hours: 2)), endDateTime: now.add(const Duration(hours: 4)), capacity: 60, registeredDonorIds: ['d2'], latitude: 23.0300, longitude: 72.5800),
       BloodEvent(id: 'e3', title: 'Independence Day Mega Camp', organizer: 'Red Cross Society', venue: 'City Ground, Gandhinagar', startDateTime: DateTime(2026, 8, 15, 8), endDateTime: DateTime(2026, 8, 15, 18), capacity: 200, latitude: 23.2200, longitude: 72.6400),
       BloodEvent(id: 'e4', title: 'World Blood Donor Day Camp', organizer: 'NICE Hospital', venue: 'NICE Hospital Campus', startDateTime: DateTime(2027, 6, 14, 9), endDateTime: DateTime(2027, 6, 14, 16), capacity: 150, latitude: 23.0500, longitude: 72.5200),
-    ]);
+    ];
+  }
 
-    _history.addAll([
+  static List<DonationRecord> get initialSeedHistory {
+    final now = DateTime.now();
+    return [
       DonationRecord(id: 'r1', donorId: 'd1', eventId: 'e1', donationDate: now.subtract(const Duration(days: 100))),
       DonationRecord(id: 'r2', donorId: 'd2', eventId: null, donationDate: now.subtract(const Duration(days: 20))),
       DonationRecord(id: 'r3', donorId: 'd4', eventId: 'e1', donationDate: now.subtract(const Duration(days: 200))),
-    ]);
+    ];
+  }
 
-    _requests.add(
+  static List<BloodRequest> get initialSeedRequests {
+    final now = DateTime.now();
+    return [
       BloodRequest(
         id: 'req1',
         requesterName: 'Sunrise Hospital',
@@ -89,7 +94,18 @@ class InMemoryDataRepository implements DataRepository {
         latitude: 23.0280,
         longitude: 72.5680,
       ),
-    );
+    ];
+  }
+
+  InMemoryDataRepository() {
+    _seed();
+  }
+
+  void _seed() {
+    _donors.addAll(initialSeedDonors);
+    _events.addAll(initialSeedEvents);
+    _history.addAll(initialSeedHistory);
+    _requests.addAll(initialSeedRequests);
   }
 
   @override

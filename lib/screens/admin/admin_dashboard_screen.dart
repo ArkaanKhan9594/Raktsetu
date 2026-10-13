@@ -18,11 +18,12 @@ class AdminDashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 4,
+      length: 5,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Admin Dashboard'),
           bottom: const TabBar(isScrollable: true, tabs: [
+            Tab(text: 'All Donors'),
             Tab(text: 'Events'),
             Tab(text: 'Verify Donations'),
             Tab(text: 'Requests'),
@@ -30,11 +31,155 @@ class AdminDashboardScreen extends StatelessWidget {
           ]),
         ),
         body: const TabBarView(children: [
+          _AllDonorsTab(),
           _ManageEventsTab(),
           _VerifyDonationsTab(),
           _ManageRequestsTab(),
           _CheckInTab(),
         ]),
+      ),
+    );
+  }
+}
+
+// ------------------------- TAB 0: All Donors -------------------------
+
+class _AllDonorsTab extends StatefulWidget {
+  const _AllDonorsTab();
+
+  @override
+  State<_AllDonorsTab> createState() => _AllDonorsTabState();
+}
+
+class _AllDonorsTabState extends State<_AllDonorsTab> {
+  String _search = '';
+  BloodGroup? _groupFilter;
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<AppState>(builder: (context, appState, _) {
+      var donors = appState.donors;
+      if (_groupFilter != null) {
+        donors = donors.where((d) => d.bloodGroup == _groupFilter).toList();
+      }
+      if (_search.isNotEmpty) {
+        final query = _search.toLowerCase();
+        donors = donors.where((d) =>
+            d.name.toLowerCase().contains(query) ||
+            d.city.toLowerCase().contains(query) ||
+            d.phone.contains(query)).toList();
+      }
+
+      final total = appState.donors.length;
+      final eligibleCount = appState.donors.where((d) => d.isEligibleNow).length;
+
+      return Column(
+        children: [
+          Container(
+            color: const Color(0xFF1B3A6B).withValues(alpha: 0.08),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            child: Row(
+              children: [
+                const Icon(Icons.people_alt, color: Color(0xFF1B3A6B), size: 22),
+                const SizedBox(width: 8),
+                Text(
+                  'Total Registered Donors: $total ($eligibleCount Eligible)',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF1B3A6B)),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Search donor by name, phone or city...',
+                prefixIcon: const Icon(Icons.search),
+                isDense: true,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              onChanged: (v) => setState(() => _search = v.trim()),
+            ),
+          ),
+          SizedBox(
+            height: 42,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              children: [
+                _filterChip('All', _groupFilter == null, () => setState(() => _groupFilter = null)),
+                ...BloodGroup.values.map((g) =>
+                    _filterChip(g.label, _groupFilter == g, () => setState(() => _groupFilter = g))),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          Expanded(
+            child: donors.isEmpty
+                ? const Center(child: Text('No donors found.'))
+                : ListView.builder(
+                    padding: const EdgeInsets.all(12),
+                    itemCount: donors.length,
+                    itemBuilder: (_, i) {
+                      final d = donors[i];
+                      return Card(
+                        margin: const EdgeInsets.symmetric(vertical: 6),
+                        child: ListTile(
+                          leading: BloodGroupChip(group: d.bloodGroup, size: 40),
+                          title: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  d.name,
+                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              if (d.isAdmin)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF1B3A6B),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: const Text('Admin', style: TextStyle(color: Colors.white, fontSize: 10)),
+                                ),
+                            ],
+                          ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('${d.city} · +91 ${d.phone} · Age: ${d.age} yrs (${d.gender})'),
+                              const SizedBox(height: 4),
+                              EligibilityBadge(donor: d),
+                            ],
+                          ),
+                          isThreeLine: true,
+                          trailing: IconButton(
+                            icon: const Icon(Icons.qr_code, color: Color(0xFF1B3A6B)),
+                            tooltip: 'View Donor ID Card',
+                            onPressed: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => DonorIdCardScreen(donor: d)),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      );
+    });
+  }
+
+  Widget _filterChip(String label, bool selected, VoidCallback onTap) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: ChoiceChip(
+        label: Text(label, style: TextStyle(fontSize: 12, color: selected ? Colors.white : Colors.black87)),
+        selected: selected,
+        selectedColor: const Color(0xFF1B3A6B),
+        onSelected: (_) => onTap(),
       ),
     );
   }

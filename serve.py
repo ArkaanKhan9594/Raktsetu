@@ -1,5 +1,9 @@
 import os
 import sys
+if sys.stdout is None:
+    sys.stdout = open(os.devnull, 'w')
+if sys.stderr is None:
+    sys.stderr = open(os.devnull, 'w')
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 
 class NoCacheHTTPRequestHandler(SimpleHTTPRequestHandler):

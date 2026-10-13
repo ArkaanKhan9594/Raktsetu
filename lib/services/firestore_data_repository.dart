@@ -170,9 +170,16 @@ class FirestoreDataRepository implements DataRepository {
   Future<List<Donor>> getDonors() async {
     try {
       final snap = await _donorsCol.get();
-      return snap.docs.map(_donorFromDoc).toList();
+      if (snap.docs.isNotEmpty) {
+        return snap.docs.map(_donorFromDoc).toList();
+      }
+      final defaults = InMemoryDataRepository.initialSeedDonors;
+      for (final d in defaults) {
+        _donorsCol.doc(d.id).set(_donorToMap(d)).catchError((_) {});
+      }
+      return defaults;
     } catch (_) {
-      return [];
+      return InMemoryDataRepository.initialSeedDonors;
     }
   }
 
@@ -180,22 +187,22 @@ class FirestoreDataRepository implements DataRepository {
   Future<Donor?> getDonorByPhone(String phone) async {
     try {
       final snap = await _donorsCol.where('phone', isEqualTo: phone).limit(1).get();
-      if (snap.docs.isEmpty) return null;
-      return _donorFromDoc(snap.docs.first);
-    } catch (_) {
-      return null;
-    }
+      if (snap.docs.isNotEmpty) return _donorFromDoc(snap.docs.first);
+    } catch (_) {}
+    return InMemoryDataRepository.initialSeedDonors
+        .where((d) => d.phone == phone)
+        .firstOrNull;
   }
 
   @override
   Future<Donor?> getDonorById(String id) async {
     try {
       final doc = await _donorsCol.doc(id).get();
-      if (!doc.exists) return null;
-      return _donorFromDoc(doc);
-    } catch (_) {
-      return null;
-    }
+      if (doc.exists) return _donorFromDoc(doc);
+    } catch (_) {}
+    return InMemoryDataRepository.initialSeedDonors
+        .where((d) => d.id == id)
+        .firstOrNull;
   }
 
   @override
@@ -210,9 +217,16 @@ class FirestoreDataRepository implements DataRepository {
   Future<List<BloodEvent>> getEvents() async {
     try {
       final snap = await _eventsCol.get();
-      return snap.docs.map(_eventFromDoc).toList();
+      if (snap.docs.isNotEmpty) {
+        return snap.docs.map(_eventFromDoc).toList();
+      }
+      final defaults = InMemoryDataRepository.initialSeedEvents;
+      for (final e in defaults) {
+        _eventsCol.doc(e.id).set(_eventToMap(e)).catchError((_) {});
+      }
+      return defaults;
     } catch (_) {
-      return [];
+      return InMemoryDataRepository.initialSeedEvents;
     }
   }
 
@@ -269,8 +283,19 @@ class FirestoreDataRepository implements DataRepository {
 
   @override
   Future<List<BloodRequest>> getRequests() async {
-    final snap = await _requestsCol.get();
-    return snap.docs.map(_requestFromDoc).toList();
+    try {
+      final snap = await _requestsCol.get();
+      if (snap.docs.isNotEmpty) {
+        return snap.docs.map(_requestFromDoc).toList();
+      }
+      final defaults = InMemoryDataRepository.initialSeedRequests;
+      for (final r in defaults) {
+        _requestsCol.doc(r.id).set(_requestToMap(r)).catchError((_) {});
+      }
+      return defaults;
+    } catch (_) {
+      return InMemoryDataRepository.initialSeedRequests;
+    }
   }
 
   @override
